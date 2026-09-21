@@ -313,7 +313,7 @@ If you have **already** deleted the queue item in Bambuddy and removed the file 
 
 Bambuddy reads a print's 3MF and its cover over FTPS on port 990. On every Bambu model that port serves **external storage only** — the SD card or USB stick. It is not a view of the printer's whole filesystem.
 
-On H2-series and P2S, **Bambu Studio** puts the sliced file on the printer's **internal storage** instead, uploading over a separate service on port 6000.
+On H2-series, P2S and X2D, **Bambu Studio** puts the sliced file on the printer's **internal storage** instead, uploading over a separate service on port 6000.
 
 That is where the printer *put* it, which is not always the same as where FTPS can *read* it. Some H2D firmware keeps a copy of the same file under `/cache` on the card and hands it over on request, and those prints archive in full. So Bambuddy looks before it gives up: the printer names the exact file, and checking for it costs one connection. Where no copy exists — an H2C or P2S with the file only on internal storage — there is nothing to fetch at any path, and the archive holds only what the printer reported over MQTT.
 
@@ -327,7 +327,9 @@ What decides it is the slicer, not the printer and not your settings. Measured o
 
 Treat the last column as "what those printers did on that day", not a rule: a later H2D report ([#2856](https://github.com/maziggy/bambuddy/issues/2856)) had the same `brtc://emmc` dispatch with a perfectly readable copy on the card, which is why Bambuddy now checks each print rather than reading the answer off the URL.
 
-The same H2C and H2D sliced in **OrcaSlicer** put the file on the card and archived in full, and turning "Store sent files on external storage" *off* made no difference to that — OrcaSlicer always uploads over FTPS. So the toggle does not control this on H2-series, in either direction.
+The **X2D** behaves like the H2 series. That one is not from the run above but from a user report ([#3126](https://github.com/maziggy/bambuddy/issues/3126)), whose log carries the same `brtc://emmc` dispatch with a card in the slot and OrcaSlicer archiving the same project in full on the same printer.
+
+The same H2C and H2D sliced in **OrcaSlicer** put the file on the card and archived in full, and turning "Store sent files on external storage" *off* made no difference to that — OrcaSlicer always uploads over FTPS. So the toggle does not control this on H2-series, P2S or X2D, in either direction.
 
 Bambu Studio's **Send** dialog does offer a storage picker — **Cache** (the printer's internal memory) or **External** — and choosing External puts the file on the card where Bambuddy can read it. Its **Print** button offers no such choice (tested on an H2D) and goes to Cache every time. So staying in Bambu Studio means sending first and starting the print as a second step. [BambuStudio#10481](https://github.com/bambulab/BambuStudio/issues/10481) tracks the default.
 
@@ -345,7 +347,7 @@ All the routes below need a card or stick in the printer. On X1 and P1 series, w
 
 1. **Insert a card or stick**
       - Check Settings > Printers > Connection Diagnostic: `Store sent files on external storage` reports `no_media` when the slot is empty
-      - The setting itself lives in the printer's own Print Settings on current firmware, and in Bambu Studio / OrcaSlicer's Device tab on older versions. It is worth having on, but on H2-series and P2S it will not change where Bambu Studio sends the file
+      - The setting itself lives in the printer's own Print Settings on current firmware, and in Bambu Studio / OrcaSlicer's Device tab on older versions. It is worth having on, but on H2-series, P2S and X2D it will not change where Bambu Studio sends the file
 
 2. **Start the print from Bambuddy instead of the slicer**
       - Bambuddy uploads over FTPS itself, so the file lands on external storage and the archive is complete, on every model
