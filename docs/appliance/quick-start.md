@@ -14,7 +14,7 @@ From a downloaded image to a running Bambuddy in about half an hour, most of whi
 
 ## 1. Write the card
 
-You need the image, a microSD card of at least 32 GB, and a card reader. See [what to buy](index.md#what-you-need-to-buy) if you have not bought the hardware yet.
+You need the image, a microSD card of at least 64 GB, and a card reader. See [what to buy](index.md#what-you-need-to-buy) if you have not bought the hardware yet.
 
 ### Download and verify
 
@@ -120,8 +120,24 @@ The wizard shows one screen at a time. On ethernet, the WiFi screen is skipped &
 | **Welcome** | Nothing. Continue. |
 | **Connect to your WiFi** | Pick your network and enter its password. **Skipped on ethernet.** |
 | **Configure your appliance** | A device name (used as its `.local` hostname), your time zone, and the language for Bambuddy. All changeable later. |
+| **Your subscription key** | The key from your order confirmation. Skippable &mdash; see below. |
 | **Set a password** | Required &mdash; see below. |
 | **Almost there** | The hand-off. Read the next section before pressing the button. |
+
+![Connect to your WiFi](../assets/appliance-wizard-wifi.jpg){ .screenshot }
+
+![Configure your appliance](../assets/appliance-wizard-settings.jpg){ .screenshot }
+
+### Your subscription key
+
+![Your subscription key](../assets/appliance-wizard-subscription-key.jpg){ .screenshot }
+
+Twenty characters in four groups, from your order confirmation. Dashes and capitals do not matter &mdash; the wizard normalises what you type, including the letters the key alphabet avoids (`I`, `L`, `O`, `U`).
+
+The key is what opens the update channel. It is not a licence to run the software: Bambuddy is AGPL and is never gated, which is why this screen has a **Skip for now** button and the password screen does not.
+
+!!! tip "Skipping it costs nothing permanent"
+    A unit with no key runs exactly as it would with one, and simply receives no appliance updates. The appliance's own page then carries a notice with an **Enter a key** button until you add one, and the key is sent with the next heartbeat &mdash; no reset, no re-flash.
 
 ---
 
@@ -147,6 +163,8 @@ You can change it later at any time:
 ```bash
 sudo bambuddy-appliance set-admin-password
 ```
+
+![Set a recovery password](../assets/appliance-wizard-password.jpg){ .screenshot }
 
 ---
 

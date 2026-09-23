@@ -32,6 +32,10 @@ bambuddy-appliance restart     # restart the Bambuddy stack
 # Health-checked, with automatic rollback if it doesn't come up
 sudo bambuddy-appliance upgrade-bambuddy v0.2.5
 
+# The appliance layer: wizard, panel, CLI, units. Also health-checked.
+sudo bambuddy-appliance upgrade-check-appliance   # is there one? (JSON)
+sudo bambuddy-appliance upgrade-appliance
+
 # Debian packages. No rollback.
 sudo bambuddy-appliance upgrade-os
 
@@ -90,15 +94,22 @@ Only the hash is stored, in `/etc/bambuddy/admin-auth`. This is the same passwor
 
 ---
 
-## Registration
+## Subscription and registration
+
+```bash
+bambuddy-appliance license                           # key set? entitled until when? refused why?
+sudo bambuddy-appliance license XXXXX-XXXXX-XXXXX-XXXXX
+```
+
+Setting a key stores it and asks the registrar straight away, so a mistyped key is answered now rather than on a timer. The key itself is never printed back &mdash; this output ends up in support bundles.
 
 ```bash
 sudo bambuddy-appliance register
 ```
 
-Claims the unit with the fleet registrar, or sends a heartbeat if it's already claimed, and applies the resulting [registration gate](registration.md) mode.
+Claims the unit with the [fleet registrar](registration.md), or sends a heartbeat if it is already claimed. An hourly timer does this in the background; you should not normally need to call it by hand.
 
-On a downloaded or self-built image this command does nothing at all &mdash; there is no batch identifier, so it exits without contacting anything. A timer runs it in the background on partner units; you should not normally need to call it by hand.
+On a self-built image the command does nothing at all: with no batch identifier and no subscription key there is nothing to present, so it exits without contacting anything.
 
 ---
 
@@ -110,8 +121,9 @@ On a downloaded or self-built image this command does nothing at all &mdash; the
 | `/etc/bambuddy/docker-compose.yml` | The pinned container tag |
 | `/etc/bambuddy/docker-compose.override.yml` | Yours to write &mdash; e.g. bind-mounting extra file-manager roots |
 | `/etc/bambuddy/admin-auth` | Admin panel password hash |
-| `/etc/bambuddy/provisioning.json` | Partner batch identifier, if any |
+| `/etc/bambuddy/provisioning.json` | The batch identifier the image was built with, if any |
 | `/var/lib/bambuddy/` | Bambuddy's database and uploads |
+| `/var/lib/bambuddy/registrar/` | Identity, credential, subscription key and the registrar's last answers &mdash; see [Registration](registration.md#checking-for-yourself) |
 
 !!! warning "Don't hand-edit the compose file's image tag"
     `upgrade-bambuddy` rewrites it, and it is how the appliance knows what to roll back to.

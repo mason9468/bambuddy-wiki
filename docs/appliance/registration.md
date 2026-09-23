@@ -1,35 +1,87 @@
 ---
 title: Registration
-description: What a partner-built Bambuddy Appliance sends home, why a downloaded or self-built one sends nothing, and how the registration notice works
+description: What a Bambuddy Appliance sends home, what the subscription key is for, why a self-built one sends nothing, and what happens when the registrar says no
 ---
 
 # Registration
 
-**Most appliances never register.** The image sold as a download and any image you build yourself both carry an empty batch identifier, and a unit with no batch never contacts anything. That is not a setting you have to find and switch off &mdash; it is the default state, and this page is here mainly so you can confirm it.
+Registration is how an appliance is matched to a subscription and offered updates. It is **not** a licence check on the software: Bambuddy is AGPL-3.0 and is never gated, whatever the registrar says about your box.
 
-Registration exists for **partner batches**: units built by a partner with a batch identifier baked in, so the unit can be identified for warranty and offered a curated update feed.
+There are three kinds of unit, and they behave differently:
+
+| Unit | Registers? | What authorises it |
+|---|---|---|
+| **Bought as a download** | Yes | The subscription key from your order confirmation |
+| **Built by a reseller** | Yes | The batch identifier baked into their image |
+| **Built by you from source** | **Never** | Nothing &mdash; it carries no batch and no key, so it contacts nothing |
+
+A self-built appliance not contacting anything is not a setting you have to find and switch off. It is what "no batch identifier and no key" means in the code, and you can confirm it in a file (see [Checking for yourself](#checking-for-yourself)).
+
+---
+
+## The subscription key
+
+The key arrives with the order confirmation, twenty characters in four groups. The [setup wizard](quick-start.md#your-subscription-key) asks for it, and the appliance sends it every time it registers or heartbeats.
+
+Every customer downloads the **same image**, so the batch identifier inside it is worth nothing as authorisation &mdash; anyone who ever got hold of the file would have it. The purchase is what authorises, and the key is what carries the purchase.
+
+!!! tip "Entering it is optional, at first boot and afterwards"
+    Skip the screen and the appliance runs exactly as it would otherwise; it simply receives no appliance updates. The admin panel then shows an **Enter a key** notice until one is entered, and the key rides along with the next heartbeat. Nothing has to be reset or re-flashed.
+
+    ```bash
+    sudo bambuddy-appliance license XXXXX-XXXXX-XXXXX-XXXXX
+    ```
+
+    Setting it this way asks the registrar immediately, so a mistyped key tells you now rather than on a timer you cannot see.
 
 ---
 
 ## What is sent
 
-A partner unit sends exactly four things, once on first boot and then roughly once a day:
-
 | Field | What it is |
 |---|---|
-| `device_uuid` | A random identifier the unit generates for itself |
-| `batch_id` | Which partner batch the unit came from |
+| `device_uuid` | An identifier derived from the board's serial number, so the same board is always the same device |
+| `batch_id` | Which image the unit was flashed from |
+| `license_key` | Your subscription key, when one is set |
 | `model` | The hardware model string, e.g. `Raspberry Pi 5 Model B` |
-| `appliance_version` | Which appliance image is running |
-
-A downloaded or self-built unit sends **none** of it, because the check that decides whether to register at all is `batch_id` being non-empty.
+| `appliance_version` | Which version of the appliance layer is running |
 
 **No printer data. No print history. No user accounts. No credentials.** Nothing about what you print, when, or with what.
 
-The registrar records the connecting IP address as a salted hash, never in the clear, and uses it only to notice when one identity appears from many places at once.
+The registrar records the connecting IP address as a salted hash, never in the clear, and uses it only to notice when one identity turns up from many places at once.
+
+The unit claims once on first boot, then heartbeats roughly once a day. In between, an hourly timer asks one question &mdash; am I still entitled? &mdash; which writes nothing on the registrar and exists so that a revoked or renewed unit finds out within the hour rather than at its next heartbeat.
 
 !!! info "It never blocks anything"
     If the registrar is unreachable, the attempt is logged and retried later. Registration never blocks boot, and the appliance is fully usable whether or not it ever succeeds.
+
+---
+
+## What registration buys
+
+One thing: **appliance updates**. The archive that serves the appliance package answers only a registered unit whose subscription is active ([Updates](updates.md#upgrading-the-appliance-layer)).
+
+Two things it does **not** touch:
+
+- **Bambuddy itself.** It is never intercepted, gated or watermarked. The API, websockets and the camera stream are untouched, and the container is the ordinary AGPL one from `ghcr.io/maziggy/bambuddy`.
+- **Debian security updates.** The archive's package index is open to everyone, so `apt` keeps working on a unit that is not entitled. Revocation stops the appliance layer, not the operating system.
+
+A unit the registrar has **flagged or revoked** gets one more consequence: the appliance's own admin panel goes read-only behind a notice explaining why. That panel is the proprietary part, and it is the only part that is ever gated.
+
+---
+
+## When the registrar says no
+
+A claim is refused when the batch is unknown, when the batch needs a key and none was sent, when the key is not recognised, when the subscription has expired or been withdrawn, or when a reseller's batch has already used every unit it was cut for.
+
+The reason is the registrar's own sentence, and the appliance keeps it:
+
+```bash
+sudo bambuddy-appliance license          # shows the key state and the last refusal
+journalctl -u bambuddy-register.service -b
+```
+
+The admin panel shows the same sentence on its Dashboard, with an **Enter a key** button beside it. Retrying on its own will not fix a refusal &mdash; something has to change first, usually the key.
 
 ---
 
@@ -39,13 +91,22 @@ The registrar records the connecting IP address as a salted hash, never in the c
 cat /etc/bambuddy/provisioning.json
 ```
 
-An empty `batch_id` means the unit will never contact the registrar &mdash; this is what a downloaded or self-built appliance looks like:
+An empty `batch_id` is what a self-built appliance looks like. With no key either, the unit never contacts the registrar at all:
 
 ```json
 { "batch_id": "", "registrar_url": "https://appliance.bambuddy.cool" }
 ```
 
-To turn a partner unit into a non-registering one, blank that field. You will also lose the curated update feed and the warranty identity that goes with it.
+The rest of the state lives in `/var/lib/bambuddy/registrar/`, on the data partition:
+
+| File | What it holds |
+|---|---|
+| `device-uuid` | This unit's identity |
+| `token` | Its credential. Also the password apt uses for the archive |
+| `license-key` | The subscription key, `0600` |
+| `entitlement`, `entitled-until` | The registrar's last word on the subscription |
+| `last-status` | `active`, `flagged` or `revoked` |
+| `refused` | Why the last claim was turned away, when it was |
 
 ```bash
 systemctl status bambuddy-register.timer          # is it scheduled?
@@ -54,29 +115,11 @@ journalctl -u bambuddy-register.service -b        # what did it do?
 
 ---
 
-## The registration notice
+## Re-flashing a registered unit
 
-Bambuddy on the appliance sits behind a small proxy. When a **partner** unit has not registered, that proxy shows a notice on top-level page loads. A downloaded or self-built unit never sees it.
+A unit's identity comes from the board's serial number, so a re-flashed card comes back as **the same device** &mdash; but with no token, because the token lived on the card.
 
-| State | What you see |
-|---|---|
-| Downloaded, self-built, or registered | Nothing. The proxy is transparent. |
-| Partner unit, first 14 days | Nothing. There's a grace period. |
-| Partner unit, unregistered after 14 days | A notice you can dismiss |
-| Unit reported as non-genuine | A notice you cannot dismiss |
+The registrar will not hand over a replacement on the strength of a serial number, which anyone holding the board can read. So the unit is refused, and says so, until an operator opens a one-shot re-claim window for it. On its next tick the unit mints and stores a fresh token by itself; there is nothing for you to copy anywhere.
 
-!!! success "Bambuddy is never locked"
-    The notice only ever intercepts top-level page navigations in a browser. The API, websockets, and the camera stream always pass straight through, so Home Assistant, your slicer, and any integration keep working regardless.
-
-    Bambuddy is AGPL-3.0 software. The notice belongs to the appliance wrapper, not to Bambuddy, and it never restricts a right the AGPL grants you. You can pull the same container and run it anywhere, including on the appliance itself.
-
----
-
-## Re-flashing a partner unit
-
-!!! warning "A re-flash creates a new, unregistered unit"
-    A partner unit's identity &mdash; its `device_uuid` and its token &mdash; lives on the SD card. Flashing a generic image over it does not carry that identity across. The appliance comes back as an unregistered unit, its old registration is orphaned, and the notice will eventually appear.
-
-    If you need to re-flash a partner appliance, contact whoever sold it to you first. This does not apply to a downloaded appliance, which has no registration to lose.
-
-Backing up Bambuddy does not help here: the [backup](updates.md#backups) covers Bambuddy's data, not the appliance's identity.
+!!! info "Re-claiming restores a credential, not an entitlement"
+    A revoked unit that re-claims is still revoked. And re-flashing never affects Bambuddy's own data, which the [backup](updates.md#backups) covers separately.

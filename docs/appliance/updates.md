@@ -5,13 +5,16 @@ description: How the Bambuddy Appliance upgrades itself, what a backup covers, a
 
 # Updates &amp; Backups
 
-The appliance is three layers, and each updates differently.
+The appliance is four layers, and each updates differently.
 
 | Layer | How it updates | Reversible? |
 |---|---|---|
 | **Bambuddy** (the container) | In place, from the Updates tab | Yes &mdash; automatic rollback |
+| **The appliance layer** (wizard, panel, CLI, units) | In place, from the Updates tab | Yes &mdash; automatic rollback |
 | **Operating system** (Debian packages) | In place, from the Updates tab | No |
-| **Appliance image** (the card itself) | Re-flash | N/A |
+| **Kernel, firmware, partition layout** | Re-flash | N/A |
+
+Nothing installs itself. Every lane is a button you press, with one exception: a freshly flashed card brings its appliance layer up to date once, on the first boot that has a network, so a card written from an older image does not start out behind.
 
 ---
 
@@ -30,6 +33,27 @@ sudo bambuddy-appliance upgrade-bambuddy v0.2.5
 ```
 
 If the pull itself fails &mdash; no network, bad tag &mdash; nothing changes at all. The compose file still points at the version you were running.
+
+---
+
+## Upgrading the appliance layer
+
+The wizard, the admin panel, the CLI, the systemd units and the gate configuration &mdash; everything around Bambuddy, and where nearly every fix lands.
+
+From the panel: **Updates** &rarr; **Check for updates** &rarr; **Update appliance**. From the shell:
+
+```bash
+sudo bambuddy-appliance upgrade-check-appliance   # is there one? (JSON)
+sudo bambuddy-appliance upgrade-appliance
+```
+
+It is a Debian package from Bambuddy's own signed archive, installed in place &mdash; no reboot, no card. The lane health-checks Bambuddy afterwards and puts the previous version back if it does not come up, the same as the Bambuddy lane.
+
+!!! info "This lane needs an active subscription"
+    The archive hands the package only to a registered appliance that is entitled to it. An expired or revoked unit keeps running and keeps getting Debian security updates; it stops getting the appliance layer. See [Registration](registration.md).
+
+!!! success "The signature is what is trusted, not the server"
+    The archive is generated and signed away from the machine that serves it, and the appliance verifies it against a key baked into the image. Someone who took over the archive host could delete or corrupt packages, but not forge an update.
 
 ---
 
@@ -65,9 +89,9 @@ Restore a backup onto a freshly flashed card and you get all your printers, queu
 
 ## Re-flashing the image
 
-The appliance image carries the operating system, the setup wizard, the admin panel, and the CLI. It is versioned separately from Bambuddy, and the version you flashed is shown on the Dashboard.
+The image carries the operating system, the appliance layer and the partition layout. The version of the appliance layer you are running is shown on the Dashboard.
 
-Almost nothing requires a re-flash. The container lane covers Bambuddy, and the OS lane covers Debian. In practice you re-flash for two reasons: the SD card died, or a new image carries a change the two in-place lanes cannot deliver.
+Very little requires a re-flash. Bambuddy, the appliance layer and Debian all update in place. In practice you re-flash for two reasons: the SD card died, or a change below the appliance layer &mdash; the kernel, the firmware, the partition table &mdash; which no in-place lane can deliver.
 
 !!! warning "Re-flashing erases the card"
     Everything on it. The appliance's data lives on that card and nowhere else.
@@ -77,13 +101,15 @@ Almost nothing requires a re-flash. The container lane covers Bambuddy, and the 
     3. Run the setup wizard again.
     4. Restore the backup.
 
-!!! info "Partner units lose their identity on a re-flash"
-    A partner appliance's registration identity lives on the card. Flashing a generic image over it produces an unregistered unit. See [Registration](registration.md) before you re-flash one. A downloaded appliance has no such identity, so re-flashing one costs nothing but its data.
+!!! info "A re-flashed unit has to be let back in"
+    The identity comes from the board, so the appliance comes back as the same device &mdash; but its credential lived on the card, and the registrar will not replace one on the strength of a serial number. An operator opens a one-shot re-claim window, and the unit takes a fresh credential by itself. See [Registration](registration.md#re-flashing-a-registered-unit).
+
+    Keep your subscription key: the wizard asks for it again.
 
 ---
 
 ## What upgrades cannot break
 
-Neither in-place lane touches `/var/lib/bambuddy/`, where the database and uploads live. An upgrade that fails leaves your data exactly as it was &mdash; that is why the Bambuddy lane can roll back at all.
+No in-place lane touches `/var/lib/bambuddy/`, where the database and uploads live. An upgrade that fails leaves your data exactly as it was &mdash; that is why the Bambuddy lane can roll back at all.
 
 The one thing that *does* destroy data is re-flashing, and the [factory reset](recovery.md). Both are deliberate, and both start with a backup.

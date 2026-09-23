@@ -19,7 +19,7 @@ It runs the same Bambuddy you would install yourself &mdash; same features, same
 
 <div class="feature-card" markdown>
 ### :material-package-variant-closed: You want it to just work
-Flash one card, answer four questions, and skip the self-hosting entirely. Updates are tested together and undo themselves, and support comes from the person who builds it.
+Flash one card, answer five questions, and skip the self-hosting entirely. Updates are tested together and undo themselves, and support comes from the person who builds it.
 </div>
 
 <div class="feature-card" markdown>
@@ -36,20 +36,21 @@ You probably don't need this. A Docker install gives you the same Bambuddy. The 
 
 ## What you need to buy
 
-Four parts, all of them stocked by every Raspberry Pi dealer.
+Four parts, all of them stocked by every Raspberry Pi dealer &mdash; plus a case you print yourself.
 
 | | | |
 |---|---|---|
 | **Computer** | Raspberry Pi **5**, 4 GB | 8 GB for a large fleet |
 | **Power** | The official 27 W USB-C supply | Undervoltage shows up as dropped printers, not as an error |
 | **Cooling** | The official Active Cooler | The box runs continuously; a throttled Pi looks like slow software |
-| **Storage** | microSD, **32 GB minimum** | 64 GB recommended, endurance-rated if you can |
+| **Storage** | microSD, **64 GB minimum** | Endurance-rated if you can; the appliance refuses to start on anything smaller |
+| **Case** | Print it yourself &mdash; [download the 3MF](https://bambuddy.cool/assets/downloads/bambuddy-appliance-case.3mf) | The Pi is held in it by 4 &times; M2.5 &times; 5 screws and 4 &times; M2.5 nuts |
 
 !!! warning "A Raspberry Pi 4 will not work"
     The appliance keeps two copies of its operating system and switches between them, so an update that fails can fall back to the one that worked. That layout needs the Pi 5's bootloader. On a Pi 4 the card may simply never start, with nothing on screen to explain why.
 
-!!! info "Why 32 GB is a floor, not a suggestion"
-    The two operating-system copies and their boot partitions claim about 21 GB before any of your data is stored, so a 16 GB card cannot hold the image at all. A 64 GB card leaves roughly 38 GB for prints, models and history.
+!!! info "Why 64 GB is a floor, not a suggestion"
+    The two operating-system copies and their boot partitions claim about 21 GB before any of your data is stored. A 64 GB card leaves roughly 38 GB for prints, models and history; a 32 GB one is full before you print anything, and the [hardware check](admin-panel.md#the-hardware-check) refuses to start Bambuddy on it.
 
 ---
 
@@ -91,7 +92,7 @@ Two upgrade lanes, what a backup covers, and what it doesn't.
 
 <div class="feature-card" markdown>
 ### [:material-shield-check: Registration](registration.md)
-What a partner-built unit sends home, and why a downloaded one sends nothing.
+The subscription key, what the appliance sends home, and what a refusal means.
 </div>
 
 <div class="feature-card" markdown>
@@ -106,6 +107,8 @@ Factory reset, lockouts, and what to try when it won't come up.
 ## How to get one
 
 The appliance goes on sale in **October 2026** as an image download plus an annual subscription: Personal at &euro;79/year for non-commercial use, Business at &euro;249/year for commercial use with a named support channel and an agreed response time. One subscription covers one appliance, whatever number of printers you point it at.
+
+Your subscription key arrives with the order confirmation. The setup wizard asks for it, the appliance sends it when it registers, and that is what opens the update channel. Entering it is optional: skip the screen and the box runs exactly the same, it simply receives no appliance updates until you add the key in the panel.
 
 If the subscription lapses, **the appliance keeps working exactly as it is.** What stops is updates and support, not the software you already have.
 
