@@ -506,6 +506,7 @@ bambuddy-backup-20260201-143022.zip
 
 ```
 bambuddy-backup-YYYYMMDD-HHMMSS.zip
+├── manifest.json            # Which Bambuddy version made this backup
 ├── bambuddy.db              # Database (portable SQLite format, works on both SQLite and PostgreSQL installs)
 ├── archive/                 # All archive data
 │   ├── <archive_id>/        # Individual archive folders
@@ -565,6 +566,15 @@ Backups are fully portable between installations:
 - **Different database backends**: Restore a SQLite backup into a PostgreSQL install (and vice versa)
 
 The backup system always exports data in portable SQLite format, regardless of which database backend you use. When restoring into PostgreSQL, Bambuddy automatically converts data types (booleans, datetimes) and handles foreign key constraints.
+
+#### Backups and versions
+
+A backup carries the database of the version that made it, and `manifest.json` records which version that was. Restoring into a different version is normal and supported in both directions: a newer Bambuddy migrates an older backup forward after the restore, and a column a newer backup has but an older version does not know about is ignored.
+
+The one case that cannot work is a column the version you are restoring **into** requires and the backup has no value for. On a PostgreSQL install that is checked before the restore starts, and an incompatible backup is refused with a message naming the columns and both version numbers — nothing is changed, so your current data is still there. If you see it, restore the backup on the version that made it, or upgrade this install to that version first.
+
+!!! tip "Keep the versions together"
+    The simplest way to never meet this is to upgrade before restoring: restore a backup into the same version or a newer one, never into an older one. Downgrading an install and restoring yesterday's backup into it is the combination that gets caught.
 
 ---
 
