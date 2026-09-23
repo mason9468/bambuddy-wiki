@@ -81,7 +81,7 @@ sudo bambuddy-appliance license          # shows the key state and the last refu
 journalctl -u bambuddy-register.service -b
 ```
 
-The admin panel shows the same sentence on its Dashboard, with an **Enter a key** button beside it. Retrying on its own will not fix a refusal &mdash; something has to change first, usually the key.
+The admin panel shows the same sentence on its Dashboard, with an **Enter a key** button beside it &mdash; except after a re-flash, where a key is not what is missing and no button appears. A unit that has a key but has not reached the registrar yet reads **Waiting for the registrar**: that is a first boot without a network, and it resolves itself on the next tick. Retrying on its own will not fix a refusal &mdash; something has to change first, usually the key.
 
 ---
 
@@ -107,6 +107,7 @@ The rest of the state lives in `/var/lib/bambuddy/registrar/`, on the data parti
 | `entitlement`, `entitled-until` | The registrar's last word on the subscription |
 | `last-status` | `active`, `flagged` or `revoked` |
 | `refused` | Why the last claim was turned away, when it was |
+| `refused-kind` | `refused` (a key is what is missing) or `reclaim` (a re-flashed card) |
 
 ```bash
 systemctl status bambuddy-register.timer          # is it scheduled?
@@ -119,7 +120,9 @@ journalctl -u bambuddy-register.service -b        # what did it do?
 
 A unit's identity comes from the board's serial number, so a re-flashed card comes back as **the same device** &mdash; but with no token, because the token lived on the card.
 
-The registrar will not hand over a replacement on the strength of a serial number, which anyone holding the board can read. So the unit is refused, and says so, until an operator opens a one-shot re-claim window for it. On its next tick the unit mints and stores a fresh token by itself; there is nothing for you to copy anywhere.
+**With a subscription key, it fixes itself.** The key is the proof of purchase, it is your secret, and it is not readable off the board &mdash; so a unit that comes back presenting the key it activated with re-claims on its next tick, with nobody pressing anything.
+
+Without a key &mdash; a reseller unit, where the board serial is the only identifier &mdash; the registrar will not hand over a replacement, because a serial is readable by anyone holding the board. The unit is refused, and says so, until an operator opens a one-shot re-claim window for it. It then mints and stores a fresh token by itself; there is nothing for you to copy anywhere.
 
 !!! info "Re-claiming restores a credential, not an entitlement"
     A revoked unit that re-claims is still revoked. And re-flashing never affects Bambuddy's own data, which the [backup](updates.md#backups) covers separately.

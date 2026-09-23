@@ -22,7 +22,7 @@ Health at a glance:
 
 - **CPU temperature**, and the Raspberry Pi power and thermal flags &mdash; undervoltage and throttling, both *right now* and *since boot*. The since-boot flags are the ones that explain mysterious slowdowns; a cheap USB-C supply will set them.
 - **Disk and memory** usage.
-- **Service states** for Bambuddy, Docker, and the panel itself.
+- **The containers** &mdash; Bambuddy and its database, with their state and health &mdash; and the service states behind them.
 - **Network** &mdash; hostname, mDNS name, and every address the box answers on.
 - **Hardware** &mdash; the board, the memory, the size of the card, the power supply and whether a cooler was found.
 - **Subscription** &mdash; its state, the date updates run until, and the days remaining. A unit with no key reads "not applicable"; one the registrar turned away says so, with an **Enter a key** button beside it.
@@ -31,6 +31,15 @@ Health at a glance:
 ![Dashboard](../assets/appliance-panel-dashboard.jpg){ .screenshot }
 
 Plus clean **reboot** and **shutdown** buttons. Use them rather than pulling power; an SD card interrupted mid-write is the most common way to kill an appliance.
+
+### The containers
+
+The appliance runs two containers: Bambuddy and its [PostgreSQL](index.md#the-database). The Services card shows both, because the services behind them do not answer the question &mdash; `bambuddy.service` reports that Docker Compose was started, which stays true while the database restarts in a loop underneath it. A container that is running but failing its health check is shown as such.
+
+**Restart Bambuddy**, beside Reboot and Shutdown, restarts the pair. Never one of them: they start in an order, and restarting half a stack leaves Bambuddy talking to a database that is not there yet.
+
+!!! info "There is no container management here, deliberately"
+    No list of every container, no stop, no remove, no shell. The appliance's whole promise is that there is nothing to operate, and the two screens above answer what an owner actually asks: is it up, and why is it not.
 
 ### The hardware check
 
@@ -106,11 +115,13 @@ The appliance layer arrives through its own lane, so a re-flash is now for the t
 
 ## :material-stethoscope: Diagnostics
 
-Tail the journal of any core service &mdash; Bambuddy, Docker, the admin panel, the setup wizard, or firstboot. Only those five units are readable; the panel never passes a caller-supplied unit name to `journalctl`.
+Tail the journal of any core service &mdash; Bambuddy, Docker, the admin panel, the setup wizard, or firstboot &mdash; **or either container's log**. The database logs to Docker rather than to the journal, so its startup failures are only readable here.
+
+Both lists are fixed. The panel never passes a caller-supplied name to `journalctl` or `docker logs`.
 
 ![Diagnostics](../assets/appliance-panel-diagnostics.jpg){ .screenshot }
 
-**Download support bundle** packages the host-side picture into one zip: system facts, per-service logs, `docker compose ps` and `docker ps`, `ip addr` and `ip route`, and the appliance configuration files.
+**Download support bundle** packages the host-side picture into one zip: system facts, per-service logs, **both container logs**, `docker compose ps` and `docker ps`, `ip addr` and `ip route`, and the appliance configuration files.
 
 !!! info "Credentials are stripped"
     Secret values in `bambuddy.env` are masked, and the admin password hash and pending WiFi credentials are never included. The bundle is safe to attach to a public bug report.

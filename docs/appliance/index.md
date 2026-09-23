@@ -40,7 +40,7 @@ Four parts, all of them stocked by every Raspberry Pi dealer &mdash; plus a case
 
 | | | |
 |---|---|---|
-| **Computer** | Raspberry Pi **5**, 4 GB | 8 GB for a large fleet |
+| **Computer** | Raspberry Pi **5**, 4 GB | 8 GB for a large fleet &mdash; RAM only; the database does not depend on it |
 | **Power** | The official 27 W USB-C supply | Undervoltage shows up as dropped printers, not as an error |
 | **Cooling** | The official Active Cooler | The box runs continuously; a throttled Pi looks like slow software |
 | **Storage** | microSD, **64 GB minimum** | Endurance-rated if you can; the appliance refuses to start on anything smaller |
@@ -58,11 +58,25 @@ Four parts, all of them stocked by every Raspberry Pi dealer &mdash; plus a case
 
 - **Guided first boot.** No display or keyboard needed. Plug in ethernet, or join the appliance's own `Bambuddy-Setup` WiFi network and the setup page opens by itself.
 - **Its own admin panel** on port `8001`, separate from Bambuddy, so you can still fix the box when Bambuddy is down.
+- **PostgreSQL, on every unit.** No database to choose and none to migrate to later: see [below](#the-database).
 - **Health-checked upgrades.** The Bambuddy container upgrade pulls, starts, and waits for a health check &mdash; and rolls back automatically if the new version doesn't come up.
 - **Secondary IP aliases**, one per virtual printer that needs its own address on your LAN.
 - **Tailscale**, ready to sign in from the panel, so you can reach the box and its virtual printers from anywhere without opening a router port.
 - **A password of its own.** Every card generates a unique appliance password on its first boot, before SSH is allowed to accept a connection.
 - **A factory reset** from the panel or over SSH, returning you to a fresh setup wizard.
+
+---
+
+## The database
+
+The appliance runs **PostgreSQL**, on every unit, whatever the size of the farm. You do not choose it, set it up or migrate to it.
+
+A self-hosted Bambuddy defaults to SQLite and [moves to PostgreSQL above roughly ten printers](../reference/farm-sizing.md#move-the-database-to-postgresql), because SQLite allows one writer at a time and a farm's dispatch-and-completion peaks turn that into `database is locked`. That failure arrives mid-print, months after setup. An appliance exists to take that decision away, so it ships the engine that scales rather than the one that is smaller.
+
+It runs as a second container beside Bambuddy, its credentials are generated per machine on first boot, and its data lives on the data partition with everything else &mdash; so an image update leaves it alone and a [factory reset](recovery.md) erases it. Both containers are shown on the [admin panel's Dashboard](admin-panel.md#the-containers), and both can be tailed from Diagnostics.
+
+!!! info "Pointing it at your own PostgreSQL"
+    Set `DATABASE_URL` in `/etc/bambuddy/bambuddy.env`. That file is read after the generated one, so your value wins. Nothing else changes.
 
 ---
 

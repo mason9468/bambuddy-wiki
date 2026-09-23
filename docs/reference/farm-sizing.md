@@ -143,6 +143,9 @@ Some code paths retry that; not all of them do. The result is occasional lost ar
 status updates and runtime records rather than a visible crash, which is what makes it
 easy to miss.
 
+!!! success "Not your problem on a Bambuddy Appliance"
+    The [appliance](../appliance/index.md#the-database) runs PostgreSQL on every unit, whatever the size of the farm. There is nothing to migrate and no threshold to notice.
+
 !!! tip "Recommended above ~10 printers"
     Migration is a backup, a `DATABASE_URL`, a restart and a restore &mdash; all from
     the Settings UI, with no command line and no data conversion on your part. See

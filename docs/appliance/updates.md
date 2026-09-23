@@ -5,11 +5,12 @@ description: How the Bambuddy Appliance upgrades itself, what a backup covers, a
 
 # Updates &amp; Backups
 
-The appliance is four layers, and each updates differently.
+The appliance is five layers, and each updates differently.
 
 | Layer | How it updates | Reversible? |
 |---|---|---|
 | **Bambuddy** (the container) | In place, from the Updates tab | Yes &mdash; automatic rollback |
+| **PostgreSQL** (the second container) | With the image; the major is pinned | N/A |
 | **The appliance layer** (wizard, panel, CLI, units) | In place, from the Updates tab | Yes &mdash; automatic rollback |
 | **Operating system** (Debian packages) | In place, from the Updates tab | No |
 | **Kernel, firmware, partition layout** | Re-flash | N/A |
