@@ -77,6 +77,8 @@ After enabling the events you want, scroll to the **ntfy Priority** section in t
 
 Switching the provider type away from ntfy hides the section; the priorities are still saved if you switch back.
 
+The [daily digest](#daily-digest) is not covered by these priorities: it is one message summarising several events, so it goes out at the ntfy server's default.
+
 ---
 
 ### WhatsApp (CallMeBot)
