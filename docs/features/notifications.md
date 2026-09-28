@@ -94,7 +94,7 @@ Repeat these steps on each device, with a separate provider name. Saved provider
 | Permission was not granted | Allow notifications in the browser or operating system settings, then try enabling again. |
 | Server accepted the notification, but nothing appeared | Check notification permissions, Focus/Do Not Disturb, network access, and browser background/battery restrictions. Acceptance by the push service is not confirmation of delivery to the device. |
 | Test arrives but events do not | Save and enable the provider, enable the relevant event, and check the printer filter and quiet hours. The Test button bypasses event selection. |
-| Subscription expired | Edit the provider on its intended device, enable notifications again, and save. |
+| Subscription expired | Edit the provider on its intended device, enable notifications again, and save. Changes cannot be saved until the device is enrolled again; delete the provider if you no longer use it. |
 | Server key changed | The browser is still subscribed to another application key. Reset this site's push subscription/site data through browser settings, reopen it, sign in, and re-enable. This can affect other providers for the same site/device. |
 
 #### Backup and migration
