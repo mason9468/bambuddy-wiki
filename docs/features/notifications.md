@@ -49,7 +49,7 @@ Receive notifications directly in your browser or installed Bambuddy app. You do
 #### Android
 
 1. Open your Bambuddy **HTTPS** address in a supported Android browser, such as Chrome, and sign in. Use a normal tab, not Incognito/private browsing.
-2. You can use Push directly in the browser; installing Bambuddy is optional on Android. For an app icon, choose **Install app** or **Add to Home screen** from the browser menu if offered, then open Bambuddy from that icon. Menu wording varies by browser.
+2. You can use Push notifications directly in the browser; installing Bambuddy is optional on Android. For an app icon, choose **Install app** or **Add to Home screen** from the browser menu if offered, then open Bambuddy from that icon. Menu wording varies by browser.
 3. Follow [Enable and save a provider](#enable-and-save-a-provider) below on the Android device. Give it a name such as **Android phone** and allow the notification permission prompt.
 4. Send a test, return to your phone's Home screen, and check the notification shade. Tap the notification to confirm it opens Bambuddy.
 
@@ -61,7 +61,7 @@ Android uses a monochrome **B** in the status bar and the full-color Bambuddy lo
 
 #### iPhone and iPad
 
-On **iOS/iPadOS 16.4 or later**, open Bambuddy over HTTPS and use **Share → Add to Home Screen**, then open Bambuddy from that icon and sign in. Unlike Android, enable Push inside the installed Home Screen app, not a regular browser tab. Follow [Enable and save a provider](#enable-and-save-a-provider) below, using a name such as **iPhone**. See [WebKit's platform requirements](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/).
+On **iOS/iPadOS 16.4 or later**, open Bambuddy over HTTPS and use **Share → Add to Home Screen**, then open Bambuddy from that icon and sign in. Unlike Android, enable Push notifications inside the installed Home Screen app, not a regular browser tab. Follow [Enable and save a provider](#enable-and-save-a-provider) below, using a name such as **iPhone**. See [WebKit's platform requirements](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/).
 
 #### Enable and save a provider
 
@@ -101,7 +101,7 @@ Repeat these steps on each device, with a separate provider name. Saved provider
 
 Bambuddy generates its Web Push signing identity automatically. Full backups include the encrypted `.web_push_vapid_key` alongside the database and the file-based `.mfa_encryption_key`. Keep them together; losing or changing the signing key requires devices to enroll again. If you set `MFA_ENCRYPTION_KEY` in the environment, preserve that value separately and use the matching value on restore.
 
-Restart Bambuddy after restoring a backup. A corrupt Push key or a conflicting encryption key is rejected before the restore changes the database. Backups from before Web Push have no signing key; devices must enroll again after restoring one. Changing the site's hostname also requires enrollment at the new origin.
+Restart Bambuddy after restoring a backup. A corrupt notification signing key or a conflicting encryption key is rejected before the restore changes the database. Backups from before Web Push have no signing key; devices must enroll again after restoring one. Changing the site's hostname also requires enrollment at the new origin.
 
 For API clients, `GET /api/v1/notifications/webpush/public-key` returns the public application key and requires the existing notification-read permission when authentication is enabled. Enrollment uses the existing provider create/update endpoints with provider type `webpush`. Notification subscriptions and private keys are not exposed in responses.
 
